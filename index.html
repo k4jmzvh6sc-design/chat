@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Nexus</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap');
+
+:root {
+  --bg:    #09090f;
+  --s1:    #0f1018;
+  --s2:    #15161f;
+  --s3:    #1c1d28;
+  --s4:    #232535;
+  --gold:  #c8a96e;
+  --glow:  rgba(200,169,110,0.15);
+  --blue:  #5b8dee;
+  --bdim:  rgba(91,141,238,0.15);
+  --gr:    #34d399;
+  --rd:    #f87171;
+  --t0:    #f0f1f8;
+  --t1:    #8b93b0;
+  --t2:    #454c68;
+  --line:  rgba(255,255,255,0.07);
+  --linh:  rgba(255,255,255,0.14);
+  --f:     'Inter', -apple-system, sans-serif;
+  --serif: 'Playfair Display', Georgia, serif;
+  --r:     18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html { height: 100%; height: -webkit-fill-available; }
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  background: var(--bg);
+  color: var(--t0);
+  font-family: var(--f);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 0%, rgba(91,141,238,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 0% 100%, rgba(200,169,110,0.06) 0%, transparent 55%);
+}
+
+/* ── SCREENS ────────────────────────────────────────────────────── */
+.screen { display: none; position: fixed; inset: 0; z-index: 1; flex-direction: column; }
+.screen.active { display: flex; }
+/* Welcome scrolls as a full page, not a fixed panel */
+#welcome {
+  position: absolute !important;
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+@keyframes up   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+@keyframes pop  { from { opacity:0; transform:scale(.88) translateY(10px) } to { opacity:1; transform:scale(1) translateY(0) } }
+@keyframes fade { from { opacity:0 } to { opacity:1 } }
+@keyframes pulse-gold { 0%,100% { box-shadow:0 0 0 0 rgba(200,169,110,.25) } 60% { box-shadow:0 0 0 12px rgba(200,169,110,0) } }
+
+/* ── WELCOME ────────────────────────────────────────────────────── */
+#welcome {
+  align-items: center;
+  justify-content: flex-start;
+  padding: max(env(safe-area-inset-top),48px) 24px max(env(safe-area-inset-bottom),48px);
+  animation: fade .4s ease;
+  min-height: 100%;
+}
+
+.w-logo {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; margin-bottom: 40px; padding-top: 20px; width: 100%;
+}
+
+.logo-icon {
+  width: 80px; height: 80px;
+  border-radius: 26px;
+  background: var(--s2);
+  border: 1px solid rgba(200,169,110,.3);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1px rgba(200,169,110,.1), 0 24px 60px rgba(0,0,0,.6);
+  animation: pulse-gold 3s ease-in-out infinite;
+  position: relative; overflow: hidden;
+}
+.logo-icon::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(145deg, rgba(200,169,110,.1) 0%, transparent 60%);
+}
+.logo-icon svg { width: 38px; height: 38px; position: relative; z-index: 1; }
+
+.logo-name {
+  font-family: var(--serif);
+  font-size: 42px; font-weight: 600; color: var(--t0);
+  letter-spacing: -1px; line-height: 1;
+}
+.logo-name em { color: var(--gold); font-style: italic; }
+
+.logo-tag {
+  font-size: 11px; letter-spacing: 3.5px; text-transform: uppercase;
+  color: var(--t2); font-weight: 500;
+}
+
+/* card */
+.card {
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 28px 24px;
+  width: 100%; max-width: 420px;
+  position: relative; overflow: hidden;
+  flex-shrink: 0;
+}
+.card::after {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,169,110,.2), transparent);
+}
+
+/* tabs */
+.tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: var(--s3); border-radius: 14px;
+  padding: 3px; margin-bottom: 22px;
+}
+.tab {
+  padding: 11px; border-radius: 12px; text-align: center;
+  font-size: 14px; font-weight: 600; cursor: pointer; color: var(--t2);
+  transition: all .25s; user-select: none;
+}
+.tab.on { background: var(--s4); color: var(--t0); }
+
+/* fields */
+.fgroup { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.flabel { font-size: 11px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; color: var(--t2); margin-bottom: 6px; display: block; }
+
+input, select, textarea {
+  background: var(--s2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 16px; color: var(--t0); font-family: var(--f); font-size: 15px;
+  outline: none; width: 100%; transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, select:focus { border-color: var(--linh); box-shadow: 0 0 0 3px rgba(91,141,238,.12); }
+input::placeholder { color: var(--t2); }
+
+.rrow { display: flex; gap: 8px; }
+.rrow input { flex: 1; }
+.gbtn {
+  background: var(--s2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 0 16px; color: var(--gold); font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; transition: all .2s; min-width: 70px;
+  font-family: var(--f);
+}
+.gbtn:hover, .gbtn:active { border-color: var(--gold); background: var(--glow); }
+
+/* security options */
+.slev { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.slev-opt {
+  border: 1px solid var(--line); border-radius: 14px; padding: 12px 8px;
+  cursor: pointer; text-align: center; background: var(--s2); transition: all .2s;
+}
+.slev-opt.on { border-color: var(--gold); background: var(--glow); }
+.sl-ico { font-size: 22px; margin-bottom: 5px; }
+.sl-nm  { font-size: 11px; font-weight: 700; color: var(--t1); }
+.sl-sb  { font-size: 10px; color: var(--t2); margin-top: 2px; line-height: 1.4; }
+
+.err { font-size: 12px; color: var(--rd); min-height: 16px; font-weight: 500; text-align: center; }
+
+/* primary btn */
+.btn-go {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  background: linear-gradient(135deg, #5b8dee 0%, #3a6fd4 100%);
+  border: none; border-radius: 16px; padding: 16px;
+  color: #fff; font-family: var(--f); font-size: 15px; font-weight: 700;
+  cursor: pointer; width: 100%;
+  box-shadow: 0 8px 28px rgba(91,141,238,.38);
+  transition: all .2s; -webkit-appearance: none;
+}
+.btn-go:active { transform: scale(.97); }
+.btn-go svg { width: 17px; height: 17px; stroke: #fff; }
+
+.terms { font-size: 11px; color: var(--t2); text-align: center; line-height: 1.7; margin-top: 14px; }
+.terms a { color: var(--gold); text-decoration: none; }
+
+/* ── APP SCREEN ─────────────────────────────────────────────────── */
+#app { flex-direction: column; }
+
+/* top nav bar */
+.topbar {
+  display: flex; align-items: center;
+  padding: max(env(safe-area-inset-top), 14px) 16px 14px;
+  background: rgba(9,9,15,.92); backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--line); flex-shrink: 0; gap: 10px;
+  position: relative; z-index: 20;
+}
+
+.tb-back {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--s2); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t1); flex-shrink: 0;
+  transition: all .15s;
+}
+.tb-back:active { background: var(--s3); }
+.tb-back svg { width: 16px; height: 16px; stroke: currentColor; }
+
+.tb-center { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.tb-av { width: 36px; height: 36px; border-radius: 11px; background: var(--s3); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.tb-info { min-width: 0; }
+.tb-name { font-size: 15px; font-weight: 700; color: var(--t0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-stat { font-size: 11px; display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+.sdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sdot.on  { background: var(--gr); animation: blink 2s infinite; }
+.sdot.off { background: var(--t2); }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+.tb-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.tbact {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--s2); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t1); transition: all .15s;
+}
+.tbact:active { background: var(--s3); color: var(--t0); }
+.tbact svg { width: 15px; height: 15px; stroke: currentColor; }
+.tbact.gold { color: var(--gold); border-color: rgba(200,169,110,.25); }
+
+.enc-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.2);
+  border-radius: 8px; padding: 4px 8px;
+  font-size: 10px; font-weight: 700; color: var(--gr); letter-spacing: .5px;
+}
+.enc-chip svg { width: 9px; height: 9px; stroke: var(--gr); }
+
+/* room selector bar (mobile sidebar replacement) */
+.roombar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  background: var(--s1); border-bottom: 1px solid var(--line);
+  overflow-x: auto; flex-shrink: 0;
+}
+.roombar::-webkit-scrollbar { display: none; }
+
+.rb-chip {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--s2); border: 1px solid var(--line); border-radius: 20px;
+  padding: 6px 12px 6px 8px; cursor: pointer; flex-shrink: 0;
+  transition: all .2s; white-space: nowrap;
+}
+.rb-chip.on { border-color: var(--gold); background: var(--glow); }
+.rb-chip-av { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.rb-chip-name { font-size: 13px; font-weight: 600; color: var(--t1); }
+.rb-chip.on .rb-chip-name { color: var(--gold); }
+.rb-add {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  background: var(--s2); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--gold); font-size: 20px; transition: all .15s;
+}
+.rb-add:active { background: var(--glow); }
+
+/* messages */
+.msgs {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 16px 16px 8px;
+  display: flex; flex-direction: column; gap: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.msgs::-webkit-scrollbar { display: none; }
+
+.sys {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: var(--t2); padding: 6px 0; text-align: center;
+}
+.sys svg { width: 11px; height: 11px; stroke: var(--gold); flex-shrink: 0; }
+
+.mg {
+  display: flex; flex-direction: column; max-width: 78%; gap: 3px;
+  animation: pop .22s cubic-bezier(.34,1.56,.64,1);
+}
+.mg.me   { align-self: flex-end; align-items: flex-end; }
+.mg.them { align-self: flex-start; align-items: flex-start; }
+
+.mg-who { font-size: 11px; font-weight: 600; padding: 0 4px; margin-bottom: 1px; }
+.me   .mg-who { color: var(--blue); }
+.them .mg-who { color: var(--gold); }
+
+.bub {
+  padding: 11px 15px; border-radius: 20px;
+  font-size: 15px; line-height: 1.5; word-break: break-word;
+}
+.me   .bub { background: linear-gradient(135deg,#5b8dee,#3a6fd4); color:#fff; border-bottom-right-radius:5px; box-shadow:0 4px 16px rgba(91,141,238,.3); }
+.them .bub { background: var(--s2); color:var(--t0); border:1px solid var(--line); border-bottom-left-radius:5px; }
+.bub.big  { background:none!important;border:none!important;box-shadow:none!important;font-size:44px;padding:4px 2px; }
+.bub.vb   { display:flex;align-items:center;gap:10px;min-width:200px; }
+.bub.fb   { display:flex;align-items:center;gap:10px;min-width:180px; }
+.v-play   { width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:12px; }
+.v-wave   { flex:1;display:flex;gap:2px;align-items:center;height:22px; }
+.v-wave span { width:3px;border-radius:2px;background:currentColor;opacity:.65; }
+.v-dur    { font-size:12px;opacity:.75; }
+.f-ic  { font-size:22px;flex-shrink:0; }
+.f-inf { flex:1;min-width:0; }
+.f-nm  { font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.f-sz  { font-size:11px;opacity:.7;margin-top:1px; }
+
+.mg-meta { display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2);padding:0 4px; }
+.me .mg-meta { flex-direction:row-reverse; }
+.rtick { color:var(--blue); }
+
+/* typing */
+.typing {
+  padding: 4px 16px; min-height: 30px;
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0; transition: opacity .2s; flex-shrink: 0;
+}
+.typing.on { opacity: 1; }
+.tdots { background:var(--s2);border:1px solid var(--line);border-radius:16px;border-bottom-left-radius:4px;padding:8px 12px;display:flex;gap:4px;align-items:center; }
+.tdots span { width:5px;height:5px;border-radius:50%;background:var(--t2);animation:td 1.2s ease-in-out infinite; }
+.tdots span:nth-child(2){animation-delay:.2s;}.tdots span:nth-child(3){animation-delay:.4s;}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+.twho { font-size:11px;color:var(--t2); }
+
+/* input zone */
+.izone {
+  background: rgba(9,9,15,.95); backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line);
+  padding: 10px 12px max(env(safe-area-inset-bottom),14px);
+  flex-shrink: 0; position: relative; z-index: 10;
+}
+
+/* quick emoji row */
+.qrow {
+  display: flex; gap: 3px; margin-bottom: 8px;
+  overflow-x: auto; padding-bottom: 2px; align-items: center;
+}
+.qrow::-webkit-scrollbar { display: none; }
+.qe {
+  width: 32px; height: 32px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; flex-shrink: 0;
+  transition: transform .12s; user-select: none;
+}
+.qe:active { transform: scale(1.25); background: var(--s3); }
+.qsep { width: 1px; background: var(--line); margin: 4px 3px; align-self: stretch; flex-shrink: 0; }
+
+/* toolbar */
+.toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
+.tib {
+  width: 32px; height: 32px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--s2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t2); flex-shrink: 0; transition: all .15s;
+}
+.tib:active { background: var(--s3); color: var(--t1); }
+.tib svg { width: 14px; height: 14px; stroke: currentColor; }
+.tib.on { border-color: var(--gold); color: var(--gold); background: var(--glow); }
+.tsep { width: 1px; height: 20px; background: var(--line); margin: 0 2px; flex-shrink: 0; }
+
+/* text input row */
+.trow { display: flex; gap: 9px; align-items: flex-end; }
+textarea#mi {
+  flex: 1; background: var(--s2); border: 1px solid var(--line);
+  border-radius: 16px; padding: 13px 15px;
+  color: var(--t0); font-family: var(--f); font-size: 15px;
+  resize: none; outline: none; min-height: 50px; max-height: 130px;
+  line-height: 1.5; transition: border-color .2s;
+  -webkit-appearance: none;
+}
+textarea#mi:focus { border-color: var(--linh); }
+textarea#mi::placeholder { color: var(--t2); }
+
+.send {
+  width: 50px; height: 50px; border-radius: 16px;
+  border: none; flex-shrink: 0;
+  background: linear-gradient(135deg, #5b8dee, #3a6fd4);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 18px rgba(91,141,238,.4);
+  transition: all .2s; -webkit-appearance: none;
+}
+.send:active { transform: scale(.94); }
+.send svg { width: 18px; height: 18px; stroke: #fff; }
+
+/* voice rec bar */
+.vbar {
+  display: none; align-items: center; gap: 10px;
+  background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.2);
+  border-radius: 14px; padding: 10px 13px; margin-bottom: 9px;
+}
+.vbar.on { display: flex; }
+.vdot { width: 10px; height: 10px; border-radius: 50%; background: var(--rd); animation: vp 1s ease-in-out infinite; }
+@keyframes vp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.vwav { flex: 1; display: flex; gap: 2px; align-items: center; height: 20px; }
+.vwav span { width: 3px; border-radius: 2px; background: var(--gr); animation: vb .8s ease-in-out infinite alternate; }
+.vwav span:nth-child(1){height:7px}.vwav span:nth-child(2){height:15px;animation-delay:.1s}.vwav span:nth-child(3){height:11px;animation-delay:.2s}.vwav span:nth-child(4){height:19px;animation-delay:.3s}.vwav span:nth-child(5){height:9px;animation-delay:.4s}
+@keyframes vb{from{opacity:.4}to{opacity:1}}
+.vtim { color: var(--gr); font-size: 14px; font-weight: 600; min-width: 36px; }
+.vsend { background: var(--gr); border: none; border-radius: 9px; padding: 7px 14px; color: #000; font-weight: 700; font-size: 13px; cursor: pointer; font-family: var(--f); }
+.vcan  { background: none; border: 1px solid var(--line); border-radius: 9px; padding: 7px 12px; color: var(--t2); font-size: 13px; cursor: pointer; font-family: var(--f); }
+
+/* img preview */
+.iprev {
+  display: none; align-items: center; gap: 10px;
+  background: var(--s2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 10px; margin-bottom: 9px;
+}
+.iprev.on { display: flex; }
+.iprev img { width: 54px; height: 54px; object-fit: cover; border-radius: 10px; }
+.iprev-n { font-size: 13px; font-weight: 600; color: var(--t0); }
+.iprev-s { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.iprev-x { background: none; border: none; color: var(--rd); font-size: 18px; cursor: pointer; margin-left: auto; }
+
+/* empty chat state */
+.empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; }
+.empty svg { width: 56px; height: 56px; stroke: var(--line); stroke-width: 1; }
+.empty h3 { font-family: var(--serif); font-size: 22px; color: var(--t1); }
+.empty p { font-size: 13px; color: var(--t2); text-align: center; line-height: 1.8; max-width: 260px; }
+
+/* panels (floating) */
+.panel {
+  position: fixed; background: var(--s1); border: 1px solid var(--linh);
+  border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.7);
+  z-index: 50; display: none; animation: up .2s ease;
+}
+.panel.on { display: block; }
+
+.ep { bottom: 160px; left: 12px; right: 12px; padding: 14px; }
+.ep-cats { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+.ep-cats::-webkit-scrollbar { display: none; }
+.ec { padding: 6px 10px; border-radius: 9px; font-size: 12px; cursor: pointer; white-space: nowrap; color: var(--t2); transition: all .15s; }
+.ec.on { background: var(--s3); color: var(--t0); }
+.eg { display: grid; grid-template-columns: repeat(8,1fr); gap: 3px; max-height: 190px; overflow-y: auto; }
+.eg::-webkit-scrollbar { display: none; }
+.ee { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 21px; border-radius: 9px; cursor: pointer; transition: all .12s; }
+.ee:active { background: var(--s3); transform: scale(1.2); }
+
+.gp { bottom: 160px; left: 12px; right: 12px; padding: 14px; }
+.gs { background: var(--s2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 13px; color: var(--t0); font-family: var(--f); font-size: 14px; outline: none; width: 100%; margin-bottom: 11px; -webkit-appearance: none; }
+.gs::placeholder { color: var(--t2); }
+.gg { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; max-height: 200px; overflow-y: auto; }
+.gg::-webkit-scrollbar { display: none; }
+.gi { aspect-ratio: 1.3; background: var(--s3); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; border: 1px solid var(--line); transition: all .15s; }
+.gi:active { border-color: var(--linh); transform: scale(1.05); }
+
+.rp { border-radius: 50px!important; display: flex!important; gap: 4px; padding: 8px 10px; }
+
+/* context menu */
+.ctx {
+  position: fixed; background: var(--s1); border: 1px solid var(--linh);
+  border-radius: 16px; padding: 6px; box-shadow: 0 14px 44px rgba(0,0,0,.7);
+  z-index: 100; display: none; min-width: 170px; animation: up .14s ease;
+}
+.ctx.on { display: block; }
+.ci { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 10px; font-size: 14px; color: var(--t1); cursor: pointer; }
+.ci:active { background: var(--s2); color: var(--t0); }
+.ci svg { width: 14px; height: 14px; stroke: currentColor; }
+.ci.red { color: var(--rd); }
+.csep { height: 1px; background: var(--line); margin: 4px 0; }
+
+/* info sheet (bottom sheet on mobile) */
+.info-sheet {
+  position: fixed; inset: 0; z-index: 60; display: none;
+  flex-direction: column; justify-content: flex-end;
+}
+.info-sheet.on { display: flex; }
+.info-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.info-body {
+  position: relative; z-index: 1;
+  background: var(--s1); border-radius: 28px 28px 0 0;
+  padding: 0 0 max(env(safe-area-inset-bottom),24px);
+  max-height: 85vh; overflow-y: auto;
+  animation: up .3s ease;
+}
+.info-body::-webkit-scrollbar { display: none; }
+.info-handle { width: 36px; height: 4px; background: var(--line); border-radius: 2px; margin: 12px auto; }
+.info-head { padding: 4px 20px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+.info-title { font-family: var(--serif); font-size: 20px; color: var(--t0); }
+.info-x { background: none; border: none; color: var(--t2); font-size: 20px; cursor: pointer; }
+.info-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.info-av { width: 68px; height: 68px; border-radius: 18px; background: var(--s3); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 6px; }
+.info-nm { text-align: center; font-size: 18px; font-weight: 700; color: var(--t0); }
+.info-sb { text-align: center; font-size: 12px; color: var(--t2); margin-top: 3px; }
+.is-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--t2); margin-bottom: 10px; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-box { background: var(--s2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.stat-v { font-size: 22px; font-weight: 700; color: var(--t0); }
+.stat-l { font-size: 11px; color: var(--t2); margin-top: 3px; }
+.key-box { background: var(--s2); border: 1px solid var(--line); border-radius: 14px; padding: 13px; font-size: 11px; color: var(--gr); word-break: break-all; line-height: 1.8; }
+.info-acts { display: flex; flex-direction: column; gap: 8px; }
+.iact {
+  display: flex; align-items: center; gap: 11px;
+  background: var(--s2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 13px 15px; color: var(--t1); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .15s; font-family: var(--f); text-align: left; width: 100%;
+}
+.iact:active { background: var(--s3); color: var(--t0); }
+.iact svg { width: 15px; height: 15px; stroke: currentColor; }
+.iact.danger { color: var(--rd); }
+
+/* share modal */
+.modal-overlay { position: fixed; inset: 0; z-index: 70; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.modal-overlay.on { display: flex; }
+.modal { background: var(--s1); border: 1px solid var(--linh); border-radius: 28px; padding: 28px; width: 100%; max-width: 400px; animation: up .25s ease; }
+.modal-title { font-family: var(--serif); font-size: 22px; color: var(--t0); margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--t2); margin-bottom: 18px; line-height: 1.6; }
+.share-url { background: var(--s2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 12px; color: var(--gold); word-break: break-all; line-height: 1.7; margin-bottom: 16px; }
+.modal-btns { display: flex; gap: 9px; }
+.mbtn-p { flex: 1; background: linear-gradient(135deg,#5b8dee,#3a6fd4); border: none; border-radius: 14px; padding: 14px; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; font-family: var(--f); }
+.mbtn-s { flex: 1; background: var(--s2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; color: var(--t1); font-weight: 600; font-size: 14px; cursor: pointer; font-family: var(--f); }
+
+/* search bar */
+.srchbar { display: none; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--s1); }
+.srchbar.on { display: block; }
+.srchbar input { border-radius: 12px; }
+
+/* new room sheet */
+.nrm-sheet { position: fixed; inset: 0; z-index: 80; display: none; flex-direction: column; justify-content: flex-end; }
+.nrm-sheet.on { display: flex; }
+.nrm-body { position: relative; z-index: 1; background: var(--s1); border-radius: 28px 28px 0 0; padding: 0 20px max(env(safe-area-inset-bottom),24px); animation: up .3s ease; }
+.nrm-handle { width: 36px; height: 4px; background: var(--line); border-radius: 2px; margin: 12px auto; }
+.nrm-title { font-family: var(--serif); font-size: 20px; color: var(--t0); margin-bottom: 4px; }
+.nrm-sub { font-size: 13px; color: var(--t2); margin-bottom: 18px; }
+.nrm-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.nrm-row input { flex: 1; }
+.nrm-btns { display: flex; gap: 9px; }
+
+/* toast */
+.toast {
+  position: fixed; bottom: max(env(safe-area-inset-bottom),20px);
+  left: 50%; transform: translateX(-50%) translateY(14px);
+  background: var(--s2); border: 1px solid var(--linh); border-radius: 22px;
+  padding: 10px 18px; font-size: 13px; font-weight: 600; color: var(--t0);
+  z-index: 999; opacity: 0; transition: all .3s; pointer-events: none;
+  white-space: nowrap; display: flex; align-items: center; gap: 7px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.5);
+}
+.toast.on { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* loading indicator */
+.connecting {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: var(--s2); border: 1px solid var(--line); border-radius: 20px;
+  padding: 24px 32px; text-align: center; z-index: 200; display: none;
+}
+.connecting.on { display: block; }
+.spin { width: 32px; height: 32px; border: 2px solid var(--line); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg) } }
+.conn-t { font-size: 14px; font-weight: 600; color: var(--t0); }
+.conn-s { font-size: 12px; color: var(--t2); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div class="screen active" id="welcome">
+  <div class="w-logo">
+    <div class="logo-icon">
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+        <path d="M19 3.5L5.5 10v9.5C5.5 28 11.5 34.5 19 36c7.5-1.5 13.5-8 13.5-16.5V10L19 3.5z" stroke="url(#lg)" stroke-width="1.5" fill="none"/>
+        <path d="M14 19l3.5 3.5 6.5-6.5" stroke="#c8a96e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs><linearGradient id="lg" x1="5.5" y1="3.5" x2="32.5" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="#c8a96e"/><stop offset="1" stop-color="#5b8dee"/></linearGradient></defs>
+      </svg>
+    </div>
+    <div class="logo-name">Ne<em>x</em>us</div>
+    <div class="logo-tag">Secure · Private · Encrypted</div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab on" id="tjoin" onclick="stab('join')">Join Room</div>
+      <div class="tab" id="tcreate" onclick="stab('create')">Create Room</div>
+    </div>
+
+    <!-- JOIN -->
+    <div id="jform">
+      <div class="fgroup">
+        <div>
+          <label class="flabel">Your Name</label>
+          <input id="jname" type="text" placeholder="How you appear in chat" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false"/>
+        </div>
+        <div>
+          <label class="flabel">Room Code</label>
+          <input id="jroom" type="text" placeholder="Enter the room code" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="60"/>
+        </div>
+        <div>
+          <label class="flabel">Security</label>
+          <div class="slev">
+            <div class="slev-opt on" id="js0" onclick="pjs(0)"><div class="sl-ico">🔒</div><div class="sl-nm">Standard</div><div class="sl-sb">AES-256</div></div>
+            <div class="slev-opt" id="js1" onclick="pjs(1)"><div class="sl-ico">🛡️</div><div class="sl-nm">Enhanced</div><div class="sl-sb">+Signing</div></div>
+            <div class="slev-opt" id="js2" onclick="pjs(2)"><div class="sl-ico">⚔️</div><div class="sl-nm">Maximum</div><div class="sl-sb">No logs</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="err" id="jerr"></div>
+      <button class="btn-go" onclick="doJoin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Enter Nexus
+      </button>
+    </div>
+
+    <!-- CREATE -->
+    <div id="cform" style="display:none;">
+      <div class="fgroup">
+        <div>
+          <label class="flabel">Your Name</label>
+          <input id="cname" type="text" placeholder="How you appear in chat" maxlength="24" autocomplete="off" autocorrect="off" spellcheck="false"/>
+        </div>
+        <div>
+          <label class="flabel">Room Name</label>
+          <div class="rrow">
+            <input id="croom" type="text" placeholder="Name your room" autocomplete="off" maxlength="40" autocorrect="off" spellcheck="false"/>
+            <button class="gbtn" onclick="genR()">✦ Gen</button>
+          </div>
+        </div>
+        <div>
+          <label class="flabel">Room Type</label>
+          <select id="ctype">
+            <option value="private">🔐 Private (2 people)</option>
+            <option value="group">👥 Group Chat</option>
+            <option value="ephemeral">💨 Ephemeral</option>
+            <option value="broadcast">📢 Broadcast</option>
+          </select>
+        </div>
+        <div>
+          <label class="flabel">Security</label>
+          <div class="slev">
+            <div class="slev-opt on" id="cs0" onclick="pcs(0)"><div class="sl-ico">🔒</div><div class="sl-nm">Standard</div><div class="sl-sb">AES-256</div></div>
+            <div class="slev-opt" id="cs1" onclick="pcs(1)"><div class="sl-ico">🛡️</div><div class="sl-nm">Enhanced</div><div class="sl-sb">+Signing</div></div>
+            <div class="slev-opt" id="cs2" onclick="pcs(2)"><div class="sl-ico">⚔️</div><div class="sl-nm">Maximum</div><div class="sl-sb">No logs</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="err" id="cerr"></div>
+      <button class="btn-go" onclick="doCreate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Create Secure Room
+      </button>
+    </div>
+
+    <div class="terms">By joining you agree to use this platform <a href="#">ethically and legally</a>.<br>All messages are end-to-end encrypted.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="screen" id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="tb-back" onclick="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="tb-center">
+      <div class="tb-av" id="tbav"></div>
+      <div class="tb-info">
+        <div class="tb-name" id="tbname">Nexus</div>
+        <div class="tb-stat">
+          <div class="sdot off" id="sdot"></div>
+          <span id="sstat" style="color:var(--t2);font-size:11px;">Waiting…</span>
+        </div>
+      </div>
+    </div>
+    <div class="tb-actions">
+      <div class="enc-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        E2E
+      </div>
+      <div class="tbact" onclick="oShare()" title="Invite">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </div>
+      <div class="tbact gold" onclick="tInfo()" title="Info">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOM BAR -->
+  <div class="roombar" id="roombar">
+    <div class="rb-add" onclick="oNRM()">+</div>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="srchbar" id="srchbar">
+    <input type="text" placeholder="Search messages…" oninput="sMsgs(this.value)" autocorrect="off"/>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty" id="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <h3>Select a Room</h3>
+    <p>Tap a room above or create one to start an encrypted conversation.</p>
+  </div>
+
+  <!-- CHAT VIEW -->
+  <div id="chatview" style="display:none; flex:1; flex-direction:column; overflow:hidden; min-height:0;">
+    <div class="msgs" id="msgs"></div>
+    <div class="typing" id="typing">
+      <div class="tdots"><span></span><span></span><span></span></div>
+      <div class="twho" id="twho"></div>
+    </div>
+
+    <!-- PANELS -->
+    <div class="panel ep" id="epanel"></div>
+    <div class="panel gp" id="gpanel">
+      <input class="gs" type="text" placeholder="Search vibes…" oninput="fG(this.value)" autocorrect="off"/>
+      <div class="gg" id="gg"></div>
+    </div>
+    <div class="panel rp" id="rpanel" style="bottom:auto;left:auto;"></div>
+
+    <!-- INPUT ZONE -->
+    <div class="izone">
+      <div class="vbar" id="vbar">
+        <div class="vdot"></div>
+        <div class="vwav"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="vtim" id="vtim">0:00</div>
+        <button class="vsend" onclick="stopV(true)">Send</button>
+        <button class="vcan"  onclick="stopV(false)">✕</button>
+      </div>
+      <div class="iprev" id="iprev">
+        <img id="previmg" src="" alt=""/>
+        <div><div class="iprev-n" id="prevn"></div><div class="iprev-s" id="prevs"></div></div>
+        <button class="iprev-x" onclick="rmImg()">✕</button>
+      </div>
+      <div class="qrow" id="qrow"></div>
+      <div class="toolbar">
+        <div class="tib" id="ebt" onclick="tEP()" title="Emoji">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+        <div class="tib" id="gbt" onclick="tGP()" title="GIF">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="12" rx="2"/><path d="M16 2l-4 6-4-6"/></svg>
+        </div>
+        <div class="tib" onclick="tPhoto()" title="Photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <input type="file" id="fi" style="display:none" accept="image/*" onchange="hFile(event)"/>
+        <div class="tib" onclick="tDoc()" title="File">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <input type="file" id="di" style="display:none" accept=".pdf,.doc,.docx,.txt,.csv" onchange="hDoc(event)"/>
+        <div class="tsep"></div>
+        <div class="tib" onclick="startV()" title="Voice">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <div class="tib" onclick="sendLoc()" title="Location">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="tib" onclick="sendPoll()" title="Poll">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="tsep"></div>
+        <div class="tib" onclick="clearMsgs()" title="Clear">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+      </div>
+      <div class="trow">
+        <textarea id="mi" placeholder="Type a message…" rows="1" onkeydown="oKey(event)" oninput="oInp(this)"></textarea>
+        <button class="send" onclick="doSend()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INFO SHEET -->
+<div class="info-sheet" id="infosheet">
+  <div class="info-backdrop" onclick="tInfo()"></div>
+  <div class="info-body">
+    <div class="info-handle"></div>
+    <div class="info-head">
+      <div class="info-title">Room Info</div>
+      <button class="info-x" onclick="tInfo()">✕</button>
+    </div>
+    <div class="info-content">
+      <div>
+        <div class="info-av" id="iav"></div>
+        <div class="info-nm" id="inm"></div>
+        <div class="info-sb">AES-256-GCM Encrypted</div>
+      </div>
+      <div>
+        <div class="is-title">Stats</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-v" id="stm">0</div><div class="stat-l">Messages</div></div>
+          <div class="stat-box"><div class="stat-v" id="stp">1</div><div class="stat-l">Online</div></div>
+          <div class="stat-box"><div class="stat-v" id="stt">—</div><div class="stat-l">Session</div></div>
+          <div class="stat-box"><div class="stat-v">AES</div><div class="stat-l">256-GCM</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="is-title">Key Fingerprint</div>
+        <div class="key-box" id="kbox"></div>
+      </div>
+      <div>
+        <div class="is-title">Actions</div>
+        <div class="info-acts">
+          <button class="iact" onclick="oShare()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Invite People</button>
+          <button class="iact" onclick="expChat()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Chat</button>
+          <button class="iact danger" onclick="clearMsgs()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Clear Messages</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="sharemod">
+  <div class="modal">
+    <div class="modal-title">Invite to Room</div>
+    <div class="modal-sub">Share this link — anyone with it can join your encrypted room from anywhere in the world.</div>
+    <div class="share-url" id="shareurl"></div>
+    <div class="modal-btns">
+      <button class="mbtn-p" onclick="cpLink()">Copy Link</button>
+      <button class="mbtn-s" onclick="cShare()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ROOM SHEET -->
+<div class="nrm-sheet" id="nrmsheet">
+  <div class="info-backdrop" onclick="cNRM()"></div>
+  <div class="nrm-body">
+    <div class="nrm-handle"></div>
+    <div class="nrm-title">New Room</div>
+    <div class="nrm-sub">Create or join another secure room</div>
+    <div class="nrm-row">
+      <input class="fi" type="text" id="nrname" placeholder="Room name or code" maxlength="40" autocomplete="off" autocorrect="off" style="flex:1;background:var(--s2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--t0);font-family:var(--f);font-size:15px;outline:none;"/>
+      <button class="gbtn" onclick="document.getElementById('nrname').value=genCode()">✦</button>
+    </div>
+    <div class="nrm-btns">
+      <button class="btn-go" style="margin-bottom:0;" onclick="addRoom()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Create
+      </button>
+      <button class="mbtn-s" style="padding:16px;" onclick="cNRM()">Cancel</button>
+    </div>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx" id="ctx">
+  <div class="ci" onclick="cxReply()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>Reply</div>
+  <div class="ci" onclick="cxCopy()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy Text</div>
+  <div class="ci" onclick="cxReact()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>React</div>
+  <div class="csep"></div>
+  <div class="ci" onclick="cxFwd()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>Forward</div>
+  <div class="ci" onclick="cxPin()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"/></svg>Pin</div>
+  <div class="csep"></div>
+  <div class="ci red" onclick="cxDel()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</div>
+</div>
+
+<div class="toast" id="toast"><span id="tico"></span><span id="ttxt"></span></div>
+<div class="connecting" id="conn"><div class="spin"></div><div class="conn-t">Connecting…</div><div class="conn-s">Establishing secure channel</div></div>
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<script>
+// ━━━ EMOJI ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const ED={
+  '😊 People':['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','😐','😑','😶','😏','😒','🙄','😬','😔','😪','😴','😷','🤒','🤕','🤢','🤧','🥵','🥶','😵','🤯','🥳','😎','🤓','😕','😟','🙁','☹️','😮','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','😤','😡','😠','🤬','😈','👿'],
+  '👋 Gestures':['👋','🤚','🖐','✋','🖖','👌','🤌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','💪','🦵','🦶','👂','👃','👁','👀'],
+  '❤️ Hearts':['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','❤️‍🔥','❤️‍🩹','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟'],
+  '🐶 Animals':['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧','🐦','🦆','🦅','🦉','🦇','🐺','🐴','🦄','🐝','🦋','🐌','🐞','🐢','🐍','🐙','🐠','🐟','🐬','🐳','🦈'],
+  '🍎 Food':['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🌶️','🧄','🥐','🥖','🍞','🧀','🥚','🍳','🥞','🧇','🥓','🍗','🌭','🍔','🍟','🍕','🥙','🥗','🍝','🍜','🍣','🍱','🥟','🍤','🧁','🍰','🎂','🍭','🍬','🍫','🍿','🍩','🍪','☕','🍵','🍺','🍻','🥂','🍷','🥃','🍸'],
+  '⚽ Sports':['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','⛳','🎣','🤿','🎿','🥊','🥋','🏆','🥇','🥈','🥉','🏅','🎖️','🎫','🎟️'],
+  '💻 Tech':['💻','🖥️','🖨️','⌨️','🖱️','💾','💿','📀','📱','☎️','📞','📟','📠','📺','📻','🎙️','🧭','⏱️','⏰','⌚','📡','🔋','🔌','💡','🔦','🕯️','🔑','🗝️','🔐','🔒','🔓','🔧','🔩','⚙️','🔗','🧲'],
+  '🎉 Fun':['🎉','🎊','🎈','🎀','🎁','🎗️','🎵','🎶','🎼','🎤','🎧','🎷','🎸','🎹','🎺','🎻','🥁','🪘','🎮','🕹️','🎲','♟️','🎯','🎳','🎰','🧩','🎭','🎨','🖼️','🎪','🎬','🎥','📸','📷','🌍','🌎','🌏','🏔️','⛰️','🌋','🏕️','🏖️','🏝️'],
+};
+const QE=['👍','❤️','😂','😮','😢','🔥','✨','🙏','👋','🎉',null,'😊','🥰','😘','💕','🤝','💯','🙌'];
+const QR=['❤️','👍','😂','😮','😢','🔥','🎉','👏'];
+const GD=[{e:'🌊',l:'wave'},{e:'🌅',l:'sunset'},{e:'✨',l:'sparkle'},{e:'💫',l:'dizzy'},{e:'🌈',l:'rainbow'},{e:'🌸',l:'cherry'},{e:'🎬',l:'action'},{e:'🎭',l:'drama'},{e:'🎪',l:'circus'},{e:'🌺',l:'flower'},{e:'🌿',l:'nature'},{e:'⚡',l:'bolt'},{e:'🌙',l:'moon'},{e:'☀️',l:'sun'},{e:'🎵',l:'music'},{e:'🎸',l:'guitar'},{e:'🏔️',l:'mountain'},{e:'🌊',l:'ocean'}];
+
+// ━━━ CRYPTO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let AK=null;
+async function dk(room){
+  const e=new TextEncoder();
+  const raw=await crypto.subtle.importKey('raw',e.encode(room+'_nexus_secure_v4'),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:e.encode('nx-iv-salt-v4'),iterations:150000,hash:'SHA-256'},raw,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function enc(txt){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},AK,new TextEncoder().encode(txt));
+  const b=new Uint8Array(12+ct.byteLength);b.set(iv);b.set(new Uint8Array(ct),12);
+  return btoa(String.fromCharCode(...b));
+}
+async function dec(b64){
+  const b=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const p=await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},AK,b.slice(12));
+  return new TextDecoder().decode(p);
+}
+function kfp(r){const s=r+'nx_v4';return Array.from({length:32},(_,i)=>((s.charCodeAt(i%s.length)*17+i*13)%256).toString(16).padStart(2,'0')).join('').match(/.{4}/g).join(' ').toUpperCase();}
+
+// ━━━ STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let gun,myId,myName,myColor;
+let rooms=[],AR=null,seen=new Set();
+let peerOn=false,peerName=null;
+let tT=null,mtT=null,vI=null,vS=0;
+let pendImg=null,mc=0,ss=Date.now();
+let cxT=null,infoOpen=false,epOpen=false,gpOpen=false;
+let allM=[],hbTimer=null;
+
+const PEERS=[
+  'https://gun-manhattan.herokuapp.com/gun',
+  'https://gunjs.herokuapp.com/gun'
+];
+const COLS=['linear-gradient(135deg,#5b8dee,#3a6fd4)','linear-gradient(135deg,#c8a96e,#a07830)','linear-gradient(135deg,#34d399,#059669)','linear-gradient(135deg,#f87171,#dc2626)','linear-gradient(135deg,#a78bfa,#7c3aed)'];
+const REM=['💬','🔐','🛡️','⚔️','🌟','🔮','🌊','🎯','🧩','🎪'];
+
+// URL prefill
+;(()=>{const p=new URLSearchParams(location.search);if(p.get('room')){document.getElementById('jroom').value=p.get('room');document.getElementById('croom').value=p.get('room');}})();
+
+// ━━━ WELCOME ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function stab(w){
+  document.getElementById('tjoin').classList.toggle('on',w==='join');
+  document.getElementById('tcreate').classList.toggle('on',w==='create');
+  document.getElementById('jform').style.display=w==='join'?'block':'none';
+  document.getElementById('cform').style.display=w==='create'?'block':'none';
+}
+function pjs(n){[0,1,2].forEach(i=>document.getElementById('js'+i).classList.toggle('on',i===n));}
+function pcs(n){[0,1,2].forEach(i=>document.getElementById('cs'+i).classList.toggle('on',i===n));}
+function genR(){document.getElementById('croom').value=genCode();}
+function genCode(){
+  const w=['nova','echo','delta','cipher','vault','sigma','prism','apex','zenith','orbit','helix','quanta','axiom','nexon','atlas','prime','titan','vega','lyra'];
+  const r=()=>w[Math.floor(Math.random()*w.length)];
+  return r()+'-'+r()+'-'+(1000+Math.floor(Math.random()*9000));
+}
+
+async function doJoin(){
+  const name=document.getElementById('jname').value.trim();
+  const room=document.getElementById('jroom').value.trim();
+  const err=document.getElementById('jerr');
+  if(!name){err.textContent='Enter your name';return;}
+  if(!room){err.textContent='Enter a room code';return;}
+  err.textContent='';
+  await init(name,room);
+}
+
+async function doCreate(){
+  const name=document.getElementById('cname').value.trim();
+  const room=(document.getElementById('croom').value.trim())||genCode();
+  const err=document.getElementById('cerr');
+  if(!name){err.textContent='Enter your name';return;}
+  err.textContent='';
+  await init(name,room);
+}
+
+async function init(name,code){
+  document.getElementById('conn').classList.add('on');
+  myId=crypto.randomUUID();myName=name;
+  myColor=COLS[Math.floor(Math.random()*COLS.length)];
+  try{AK=await dk(code);}catch(e){document.getElementById('conn').classList.remove('on');t('Encryption error','⚠️');return;}
+  gun=Gun(PEERS);
+  document.getElementById('welcome').classList.remove('active');
+  document.getElementById('app').classList.add('active');
+  document.getElementById('conn').classList.remove('on');
+  bEP();bQS();bGP();bRP();
+  addRoomL(code,code);
+  openRoom(rooms[0]);
+}
+
+// ━━━ ROOMS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function addRoomL(code,name){
+  const em=REM[rooms.length%REM.length];
+  // IMPORTANT: fixed deterministic key so any user with same code hits same node
+  const db=gun.get('NX_V4_'+code.replace(/[^a-zA-Z0-9_-]/g,'_'));
+  const room={code,name,em,db,mc:0,lm:'',lt:null};
+  rooms.push(room);
+  rRB();return room;
+}
+
+function rRB(){
+  const rb=document.getElementById('roombar');
+  // keep the + button
+  rb.innerHTML='<div class="rb-add" onclick="oNRM()">+</div>';
+  rooms.forEach(r=>{
+    const el=document.createElement('div');
+    el.className='rb-chip'+(AR===r?' on':'');
+    el.innerHTML='<div class="rb-chip-av">'+r.em+'</div><div class="rb-chip-name">'+esc(r.name.length>12?r.name.slice(0,12)+'…':r.name)+'</div>';
+    el.onclick=()=>openRoom(r);
+    rb.appendChild(el);
+  });
+}
+
+function openRoom(room){
+  if(AR){
+    AR.db.get('presence').get(myId).put({id:myId,name:myName,on:false,ts:Date.now()});
+    if(hbTimer){clearInterval(hbTimer);hbTimer=null;}
+  }
+  AR=room;seen=new Set();peerOn=false;peerName=null;allM=[];mc=0;
+  // show chat view
+  document.getElementById('empty').style.display='none';
+  const cv=document.getElementById('chatview');
+  cv.style.display='flex';cv.style.flexDirection='column';cv.style.flex='1';cv.style.overflow='hidden';cv.style.minHeight='0';
+  document.getElementById('msgs').innerHTML='';
+  // update topbar
+  document.getElementById('tbav').textContent=room.em;
+  document.getElementById('tbname').textContent=room.name;
+  document.getElementById('sdot').className='sdot off';
+  document.getElementById('sstat').textContent='Waiting…';
+  // info panel
+  document.getElementById('iav').textContent=room.em;
+  document.getElementById('inm').textContent=room.name;
+  document.getElementById('kbox').textContent=kfp(room.code);
+  uSt();rRB();
+
+  sysM('🔐 Encrypted room · '+room.name);
+
+  const db=room.db;
+
+  // announce my presence
+  db.get('presence').get(myId).put({id:myId,name:myName,color:myColor,on:true,ts:Date.now()});
+
+  // watch ALL presence nodes (including any that were set before we joined)
+  db.get('presence').map().on(function(d){
+    if(!d||!d.id||d.id===myId) return;
+    if(d.on&&d.name){
+      if(!peerOn){
+        peerName=d.name;
+        setPeer(true,d.name);
+        sysM('✓ '+d.name+' is here — secure channel open');
+      }
+    } else {
+      if(peerOn&&peerName===d.name){
+        setPeer(false,d.name);
+        sysM('• '+d.name+' disconnected');
+      }
+    }
+  });
+
+  // watch messages — Gun .map().on() fires for all existing + new nodes
+  db.get('msgs').map().on(async function(d,key){
+    if(!d||!d.p||seen.has(key)) return;
+    seen.add(key);
+    if(d.from===myId) return; // already rendered
+    try{const txt=await dec(d.p);aMsg({txt,mine:false,sender:d.s,ts:d.ts,type:d.mt||'text'});cTyp();}
+    catch(e){console.warn('decrypt fail',e);}
+  });
+
+  // watch typing
+  db.get('typing').map().on(function(d){
+    if(!d||d.from===myId) return;
+    if(d.typing&&Date.now()-d.ts<4000)showTyp(d.s);else cTyp();
+  });
+
+  // heartbeat - keep presence alive
+  hbTimer=setInterval(()=>{
+    if(AR!==room){clearInterval(hbTimer);hbTimer=null;return;}
+    db.get('presence').get(myId).put({id:myId,name:myName,color:myColor,on:true,ts:Date.now()});
+  },10000);
+}
+
+// ━━━ SEND ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function doSend(){
+  const el=document.getElementById('mi');
+  if(pendImg){await sRaw(pendImg.txt,'file');rmImg();}
+  const txt=el.value.trim();
+  if(txt){await sRaw(txt,'text');el.value='';el.style.height='';clearTimeout(mtT);if(AR)AR.db.get('typing').get(myId).put({from:myId,typing:false,ts:Date.now()});}
+  cAP();
+}
+
+async function sRaw(txt,mt='text'){
+  if(!txt||!AR)return;
+  const p=await enc(txt),ts=Date.now();
+  // unique key ensures Gun doesn't deduplicate messages
+  const key='m_'+myId.slice(0,8)+'_'+ts+'_'+Math.random().toString(36).slice(2,7);
+  AR.db.get('msgs').get(key).put({p,from:myId,s:myName,ts,mt});
+  aMsg({txt,mine:true,sender:myName,ts,type:mt});
+  seen.add(key);
+  AR.lm=txt;AR.lt=ts;rRB();
+}
+
+// ━━━ FEATURES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function sendLoc(){
+  if(!navigator.geolocation){t('Location not supported','⚠️');return;}
+  navigator.geolocation.getCurrentPosition(p=>sRaw('📍 Location: https://maps.google.com/?q='+p.coords.latitude+','+p.coords.longitude,'location'),()=>t('Permission denied','⚠️'));
+}
+function sendPoll(){sRaw('📊 Poll: "Agree?" — React 👍 Yes / 👎 No','poll');}
+function startV(){document.getElementById('vbar').classList.add('on');vS=0;vI=setInterval(()=>{vS++;const m=Math.floor(vS/60),s=vS%60;document.getElementById('vtim').textContent=m+':'+(s<10?'0':'')+s;},1000);}
+function stopV(send){clearInterval(vI);document.getElementById('vbar').classList.remove('on');if(send&&vS>0){const d=vS;sRaw('🎙️ Voice · '+(Math.floor(d/60)+':'+(d%60<10?'0':'')+d%60),'voice');}vS=0;}
+function tPhoto(){document.getElementById('fi').click();}
+function tDoc(){document.getElementById('di').click();}
+function hFile(e){const f=e.target.files[0];if(!f)return;document.getElementById('previmg').src=URL.createObjectURL(f);document.getElementById('prevn').textContent=f.name;document.getElementById('prevs').textContent=fsz(f.size);document.getElementById('iprev').classList.add('on');pendImg={txt:'📷 '+f.name+' ('+fsz(f.size)+')'};e.target.value='';}
+function hDoc(e){const f=e.target.files[0];if(!f)return;sRaw('📎 '+f.name+' ('+fsz(f.size)+')','file');e.target.value='';}
+function rmImg(){pendImg=null;document.getElementById('iprev').classList.remove('on');document.getElementById('previmg').src='';}
+function fsz(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB';}
+function expChat(){const lines=allM.map(m=>'['+ft(m.ts)+'] '+m.sender+': '+m.txt);const blob=new Blob(['Nexus Chat Export\nRoom: '+(AR?AR.name:'')+'\n'+new Date().toLocaleString()+'\n\n'+lines.join('\n')],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nexus-'+Date.now()+'.txt';a.click();t('Exported','📥');}
+
+// ━━━ EMOJI PANEL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function bEP(){
+  const p=document.getElementById('epanel');p.innerHTML='';
+  const cats=document.createElement('div');cats.className='ep-cats';
+  const grid=document.createElement('div');grid.className='eg';grid.id='epg';
+  let first=true;
+  Object.keys(ED).forEach((cat,i)=>{
+    const b=document.createElement('div');b.className='ec'+(i===0?' on':'');b.textContent=cat;
+    b.onclick=()=>{cats.querySelectorAll('.ec').forEach(x=>x.classList.remove('on'));b.classList.add('on');fEG(cat);};
+    cats.appendChild(b);if(first){fEG(cat,grid);first=false;}
+  });
+  p.appendChild(cats);p.appendChild(grid);
+}
+function fEG(cat,g){
+  const grid=g||document.getElementById('epg');grid.innerHTML='';
+  ED[cat].forEach(em=>{const el=document.createElement('div');el.className='ee';el.textContent=em;el.onclick=()=>iE(em);grid.appendChild(el);});
+}
+function iE(em){const ta=document.getElementById('mi'),s=ta.selectionStart||ta.value.length;ta.value=ta.value.slice(0,s)+em+ta.value.slice(s);ta.focus();}
+
+function bQS(){
+  const qr=document.getElementById('qrow');
+  QE.forEach(em=>{
+    if(em===null){const sep=document.createElement('div');sep.className='qsep';qr.appendChild(sep);return;}
+    const el=document.createElement('div');el.className='qe';el.textContent=em;
+    el.onclick=()=>{const ta=document.getElementById('mi');if(!ta.value.trim())sRaw(em,'text');else iE(em);};
+    qr.appendChild(el);
+  });
+}
+
+function bGP(){rGP('');}
+function rGP(q){
+  const g=document.getElementById('gg');g.innerHTML='';
+  GD.filter(x=>!q||x.l.includes(q.toLowerCase())||x.e.includes(q)).forEach(x=>{
+    const el=document.createElement('div');el.className='gi';el.textContent=x.e;el.title=x.l;
+    el.onclick=()=>{sRaw(x.e+' ('+x.l+')','gif');cAP();};
+    g.appendChild(el);
+  });
+}
+function fG(q){rGP(q);}
+
+function bRP(){
+  const rp=document.getElementById('rpanel');rp.innerHTML='';
+  QR.forEach(em=>{const el=document.createElement('div');el.className='ee';el.style.fontSize='24px';el.style.width='40px';el.style.height='40px';el.textContent=em;el.onclick=()=>{sRaw(em,'reaction');cAP();};rp.appendChild(el);});
+}
+
+function tEP(){epOpen=!epOpen;gpOpen=false;document.getElementById('epanel').classList.toggle('on',epOpen);document.getElementById('gpanel').classList.remove('on');document.getElementById('ebt').classList.toggle('on',epOpen);document.getElementById('gbt').classList.remove('on');}
+function tGP(){gpOpen=!gpOpen;epOpen=false;document.getElementById('gpanel').classList.toggle('on',gpOpen);document.getElementById('epanel').classList.remove('on');document.getElementById('gbt').classList.toggle('on',gpOpen);document.getElementById('ebt').classList.remove('on');}
+function cAP(){epOpen=false;gpOpen=false;['epanel','gpanel','rpanel'].forEach(id=>document.getElementById(id).classList.remove('on'));['ebt','gbt'].forEach(id=>document.getElementById(id).classList.remove('on'));document.getElementById('ctx').classList.remove('on');}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.panel')&&!e.target.closest('.tib')&&!e.target.closest('.qe'))cAP();
+  if(!e.target.closest('.ctx')&&!e.target.closest('.bub'))document.getElementById('ctx').classList.remove('on');
+});
+
+// ━━━ TYPING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function oInp(el){
+  el.style.height='';el.style.height=Math.min(el.scrollHeight,130)+'px';
+  if(!AR)return;
+  AR.db.get('typing').get(myId).put({from:myId,s:myName,typing:true,ts:Date.now()});
+  clearTimeout(mtT);mtT=setTimeout(()=>{if(AR)AR.db.get('typing').get(myId).put({from:myId,typing:false,ts:Date.now()});},2000);
+}
+function oKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}}
+function showTyp(who){document.getElementById('twho').textContent=(who||'Someone')+' is typing…';document.getElementById('typing').classList.add('on');clearTimeout(tT);tT=setTimeout(cTyp,3500);sb();}
+function cTyp(){document.getElementById('typing').classList.remove('on');}
+
+// ━━━ PEER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function setPeer(on,name){
+  peerOn=on;peerName=name||peerName||'Someone';
+  document.getElementById('sdot').className='sdot '+(on?'on':'off');
+  document.getElementById('sstat').style.color=on?'var(--gr)':'var(--t2)';
+  document.getElementById('sstat').textContent=on?peerName+' · Online':'Waiting…';
+  document.getElementById('stp').textContent=on?'2':'1';
+  rRB();
+}
+
+// ━━━ RENDER MSG ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function aMsg({txt,mine,sender,ts,type}){
+  const area=document.getElementById('msgs');
+  mc++;allM.push({txt,sender,ts,mine});uSt();
+  const g=document.createElement('div');g.className='mg '+(mine?'me':'them');
+  const who=document.createElement('div');who.className='mg-who';who.textContent=mine?'You':esc(sender);
+  const bub=document.createElement('div');bub.className='bub';
+  const big=[...txt].length<=3&&/^\p{Emoji}/u.test(txt)&&txt===txt.trim()&&type==='text';
+  if(big)bub.classList.add('big');
+  if(type==='voice'){
+    bub.classList.add('vb');
+    const h=[8,14,10,18,12,16,9,17,11,14,7];
+    bub.innerHTML='<div class="v-play">▶</div><div class="v-wave">'+h.map(x=>'<span style="height:'+x+'px;"></span>').join('')+'</div><div class="v-dur">'+esc(txt.replace('🎙️ Voice · ',''))+'</div>';
+  }else if(type==='file'||type==='photo'){
+    bub.classList.add('fb');
+    const ic=txt.startsWith('📷')?'📷':'📎';
+    const fn=txt.replace(/^[📷📎]\s*/,'').replace(/\s*\(.*\)$/,'');
+    const fsz2=txt.match(/\(([^)]+)\)$/)?.[1]||'';
+    bub.innerHTML='<div class="f-ic">'+ic+'</div><div class="f-inf"><div class="f-nm">'+esc(fn)+'</div><div class="f-sz">'+esc(fsz2)+'</div></div>';
+  }else if(type==='location'){
+    const url=txt.replace('📍 Location: ','');
+    bub.innerHTML='📍 <a href="'+url+'" target="_blank" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">View Location</a>';
+  }else if(type==='poll'){
+    bub.innerHTML='<strong>📊 Poll</strong><br><span style="opacity:.85;font-size:14px;">'+esc(txt.replace('📊 Poll: ',''))+'</span>';
+  }else{bub.textContent=txt;}
+  bub.addEventListener('contextmenu',e=>{e.preventDefault();cxT={txt,mine,el:g};showCtx(e);});
+  // long-press for mobile
+  let lt;
+  bub.addEventListener('touchstart',()=>{lt=setTimeout(()=>{cxT={txt,mine,el:g};const r=bub.getBoundingClientRect();document.getElementById('ctx').style.top=(r.top-180)+'px';document.getElementById('ctx').style.left=r.left+'px';document.getElementById('ctx').classList.add('on');},500);});
+  bub.addEventListener('touchend',()=>clearTimeout(lt));
+  const meta=document.createElement('div');meta.className='mg-meta';meta.innerHTML='<span>'+ft(ts)+'</span>'+(mine?'<span class="rtick">✓✓</span>':'');
+  g.appendChild(who);g.appendChild(bub);g.appendChild(meta);area.appendChild(g);sb();
+}
+
+function showCtx(e){
+  const m=document.getElementById('ctx');
+  const x=Math.min(e.clientX||50,window.innerWidth-180);
+  const y=Math.min(e.clientY||100,window.innerHeight-240);
+  m.style.top=y+'px';m.style.left=x+'px';m.classList.add('on');
+}
+
+function sysM(txt){
+  const a=document.getElementById('msgs'),el=document.createElement('div');el.className='sys';
+  el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'+esc(txt);
+  a.appendChild(el);sb();
+}
+
+function sb(){const a=document.getElementById('msgs');setTimeout(()=>{a.scrollTop=a.scrollHeight;},50);}
+function uSt(){document.getElementById('stm').textContent=mc;document.getElementById('stt').textContent=Math.floor((Date.now()-ss)/60000)+'m';}
+function clearMsgs(){document.getElementById('msgs').innerHTML='';allM=[];mc=0;uSt();sysM('Messages cleared');}
+
+// ━━━ CTX MENU ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function cxReply(){if(!cxT)return;document.getElementById('mi').value='↩ '+cxT.txt.slice(0,40)+(cxT.txt.length>40?'…':'')+'\n';document.getElementById('mi').focus();cAP();}
+function cxCopy(){if(!cxT)return;navigator.clipboard.writeText(cxT.txt).then(()=>t('Copied','📋'));cAP();}
+function cxReact(){if(!cxT)return;const rp=document.getElementById('rpanel');const rect=cxT.el.getBoundingClientRect();rp.style.position='fixed';rp.style.top=Math.max(60,rect.top-60)+'px';rp.style.left=rect.left+'px';rp.classList.add('on');}
+function cxFwd(){if(!cxT)return;document.getElementById('mi').value='⟫ '+cxT.txt;document.getElementById('mi').focus();cAP();}
+function cxPin(){t('📌 Pinned','📌');cAP();}
+function cxDel(){if(cxT?.el)cxT.el.remove();t('Deleted','🗑');cAP();}
+
+// ━━━ SEARCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function sMsgs(q){document.querySelectorAll('.mg').forEach(el=>{const b=el.querySelector('.bub');if(!b)return;el.style.opacity=(!q||b.textContent.toLowerCase().includes(q.toLowerCase()))?'1':'0.2';});}
+
+// ━━━ INFO / MODALS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function tInfo(){infoOpen=!infoOpen;document.getElementById('infosheet').classList.toggle('on',infoOpen);}
+function goBack(){if(rooms.length>0)document.getElementById('empty').style.display='flex';document.getElementById('chatview').style.display='none';}
+function oNRM(){document.getElementById('nrmsheet').classList.add('on');}
+function cNRM(){document.getElementById('nrmsheet').classList.remove('on');}
+function addRoom(){
+  const name=document.getElementById('nrname').value.trim()||genCode();
+  addRoomL(name,name);cNRM();openRoom(rooms[rooms.length-1]);t('Room "'+name+'" created','✦');
+}
+function oShare(){
+  if(!AR)return;
+  const url=location.origin+location.pathname+'?room='+encodeURIComponent(AR.code);
+  document.getElementById('shareurl').textContent=url;
+  document.getElementById('sharemod').classList.add('on');
+}
+function cShare(){document.getElementById('sharemod').classList.remove('on');}
+async function cpLink(){
+  if(!AR)return;
+  const url=location.origin+location.pathname+'?room='+encodeURIComponent(AR.code);
+  try{await navigator.clipboard.writeText(url);t('Link copied!','🔗');cShare();}
+  catch(e){t('Copy manually','⚠️');}
+}
+
+// close overlays on backdrop tap
+document.getElementById('sharemod').addEventListener('click',function(e){if(e.target===this)cShare();});
+
+function logout(){
+  if(AR)AR.db.get('presence').get(myId).put({id:myId,name:myName,on:false,ts:Date.now()});
+  location.href=location.pathname;
+}
+
+window.addEventListener('beforeunload',()=>{
+  if(AR)AR.db.get('presence').get(myId).put({id:myId,name:myName,on:false,ts:Date.now()});
+});
+
+// ━━━ UTILS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ft(ts){return new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function t(msg,icon='✓'){
+  document.getElementById('tico').textContent=icon;
+  document.getElementById('ttxt').textContent=msg;
+  const el=document.getElementById('toast');
+  el.classList.add('on');setTimeout(()=>el.classList.remove('on'),2800);
+}
+</script>
+</body>
+</html>
